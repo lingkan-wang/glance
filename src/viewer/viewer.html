@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN" data-glance="viewer">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Glance</title>
+    <link rel="stylesheet" href="../../vendor/textlayer.css" />
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body data-theme="light">
+    <header class="toolbar">
+      <div class="group group-start">
+        <button class="icon" id="open" title="打开 PDF" aria-label="打开 PDF"></button>
+        <span class="title" id="title">Glance</span>
+      </div>
+
+      <div class="group group-center" id="pager" hidden>
+        <button class="icon" id="prev" title="上一页" aria-label="上一页"></button>
+        <label class="pageno">
+          <input id="pageInput" type="text" inputmode="numeric" value="1" aria-label="页码" />
+          <span class="sep">/</span>
+          <span id="pageCount">–</span>
+        </label>
+        <button class="icon" id="next" title="下一页" aria-label="下一页"></button>
+      </div>
+
+      <div class="group group-end">
+        <div class="zoom" id="zoom" hidden>
+          <button class="icon" id="zoomOut" title="缩小" aria-label="缩小"></button>
+          <button class="pct" id="zoomLevel" title="适应宽度">100%</button>
+          <button class="icon" id="zoomIn" title="放大" aria-label="放大"></button>
+        </div>
+        <button class="icon" id="theme" title="夜间模式" aria-label="夜间模式"></button>
+        <button class="icon" id="settings" title="设置" aria-label="设置"></button>
+      </div>
+    </header>
+
+    <main class="scroll" id="scroll">
+      <div class="pages" id="pages"></div>
+
+      <section class="empty" id="empty">
+        <h1>把 PDF 放进来</h1>
+        <p>拖入文件，或从 arXiv、ACM 之类的链接直接打开。选中任意一段，中文译文就在原文上方。</p>
+        <button class="cta" id="pick">选择 PDF</button>
+      </section>
+
+      <p class="failed" id="failed" hidden></p>
+    </main>
+
+    <div class="drop" id="drop" aria-hidden="true"><span>松手即可打开</span></div>
+    <input type="file" id="file" accept="application/pdf,.pdf" hidden />
+
+    <script src="../lens/lens.js"></script>
+    <script type="module" src="viewer.js"></script>
+  </body>
+</html>

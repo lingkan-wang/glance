@@ -1,0 +1,8 @@
+# 第三方论文，仅用于本地调试，不随仓库分发
+dev/*.pdf
+
+.DS_Store
+node_modules/
+
+# 本地会话日志，不入库
+.claude/

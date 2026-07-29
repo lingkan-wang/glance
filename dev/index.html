@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Glance dev harness</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 64px 24px 240px;
+        background: #fff;
+        color: #14151a;
+        font-family: 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #101012; color: #e9e9ee; }
+      }
+      main { max-width: 640px; margin: 0 auto; }
+      h1 { font-size: 22px; letter-spacing: -0.01em; }
+      p { font-size: 16px; line-height: 1.72; text-align: justify; hyphens: auto; }
+      .note {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="note">dev harness — no extension runtime, the lens falls back to the free Google endpoint</p>
+      <h1>Sticky Help, Bounded Effects: Session-by-Session Analytics of Teacher Interventions in K-12 Classrooms</h1>
+      <p>
+        Teachers' in-the-moment support is a limited resource in technology-supported classrooms, and
+        teachers must decide whom to help and when during ongoing student work. However, less is known
+        about how students' prior help history and their engagement states (e.g., idle, struggle) shape
+        teachers' decisions, and whether observed learning benefits associated with teacher help extend
+        beyond the current class session.
+      </p>
+      <p>
+        To address these questions, we first conducted interviews with nine K-12 mathematics teachers to
+        identify candidate decision factors for teacher help. We then analyzed 1.4 million student-system
+        interactions from 339 students across 14 classes in the MATHia intelligent tutoring system by
+        linking teacher-logged help events with fine-grained engagement states.
+      </p>
+      <p>
+        Mixed-effects models show that students who received help earlier were more likely to receive
+        additional help later, even after accounting for current engagement state. Cross-lagged panel
+        analyses further show that teacher help recurred across sessions, whereas idle behavior did not
+        receive sustained attention over time.
+      </p>
+    </main>
+    <script src="../src/lens/lens.js"></script>
+  </body>
+</html>
