@@ -36,6 +36,9 @@
       'M87.24,52.59a8,8,0,0,0-14.48,0l-64,136a8,8,0,1,0,14.48,6.81L39.9,160h80.2l16.66,35.4a8,8,0,1,0,14.48-6.81ZM47.43,144,80,74.79,112.57,144ZM200,96c-12.76,0-22.73,3.47-29.63,10.32a8,8,0,0,0,11.26,11.36c3.8-3.77,10-5.68,18.37-5.68,13.23,0,24,9,24,20v3.22A42.76,42.76,0,0,0,200,128c-22.06,0-40,16.15-40,36s17.94,36,40,36a42.73,42.73,0,0,0,24-7.25,8,8,0,0,0,16-.75V132C240,112.15,222.06,96,200,96Zm0,88c-13.23,0-24-9-24-20s10.77-20,24-20,24,9,24,20S213.23,184,200,184Z',
     close:
       'M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z',
+    speak:
+      'M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z',
+    mute: 'M53.92,34.62A8,8,0,1,0,42.08,45.38L73.55,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V175.09l42.08,46.29a8,8,0,1,0,11.84-10.76ZM32,96H72v64H32ZM144,207.64,88,164.09V95.89l56,61.6Zm42-63.77a24,24,0,0,0,0-31.72,8,8,0,1,1,12-10.57,40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.59Zm-80.16-76a8,8,0,0,1,1.4-11.23l39.85-31A8,8,0,0,1,160,32v74.83a8,8,0,0,1-16,0V48.36l-26.94,21A8,8,0,0,1,105.84,67.91ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z',
   };
 
   const icon = (name) =>
@@ -151,16 +154,35 @@
 .zh:empty { display: none; }
 
 .source {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
   margin: 9px 0 0;
   padding-top: 9px;
   border-top: 0.5px solid var(--hairline);
+}
+.source[hidden] { display: none; }
+
+.source-text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--ink-dim);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.source[hidden] { display: none; }
+
+/* Sits on the first line of the original, so pronunciation is one click from
+   the word itself rather than parked in the toolbar. */
+.btn-speak {
+  width: 24px;
+  height: 24px;
+  margin: -3px -5px 0 0;
+}
+.btn-speak svg { width: 15px; height: 15px; }
+.btn-speak[data-on="true"] { color: var(--accent); }
 
 .error { margin: 0; font-size: 13px; color: var(--ink-dim); }
 
@@ -254,8 +276,10 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
   let skeletonEl = null;
   let errorEl = null;
   let engineEl = null;
+  let sourceTextEl = null;
   let btnSource = null;
   let btnCopy = null;
+  let btnSpeak = null;
 
   let open = false;
   let range = null; // live-ish clone of the selection, used to re-anchor on scroll
@@ -285,7 +309,10 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
           <div class="skeleton" aria-hidden="true"><i class="bar"></i><i class="bar"></i><i class="bar"></i></div>
           <p class="zh"></p>
           <p class="error" hidden></p>
-          <p class="source" hidden></p>
+          <div class="source" hidden>
+            <p class="source-text"></p>
+            <button class="btn-speak" type="button" title="朗读原文" aria-label="朗读原文">${icon('speak')}</button>
+          </div>
         </div>
         <div class="bar-row">
           <span class="engine"></span>
@@ -299,14 +326,17 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
     pop = layer.querySelector('.pop');
     zhEl = layer.querySelector('.zh');
     sourceEl = layer.querySelector('.source');
+    sourceTextEl = layer.querySelector('.source-text');
     skeletonEl = layer.querySelector('.skeleton');
     errorEl = layer.querySelector('.error');
     engineEl = layer.querySelector('.engine');
     btnSource = layer.querySelector('.btn-source');
     btnCopy = layer.querySelector('.btn-copy');
+    btnSpeak = layer.querySelector('.btn-speak');
 
     btnSource.addEventListener('click', toggleSource, { signal });
     btnCopy.addEventListener('click', copy, { signal });
+    btnSpeak.addEventListener('click', speak, { signal });
     layer.querySelector('.btn-close').addEventListener('click', () => close(), { signal });
     // Keep a click inside the popover from counting as "clicked away".
     pop.addEventListener('mousedown', (e) => e.stopPropagation(), { signal });
@@ -407,11 +437,12 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
     const reopening = open;
     delete pop.dataset.closing;
 
+    stopSpeech();
     zhEl.textContent = '';
     errorEl.hidden = true;
     errorEl.textContent = '';
     sourceEl.hidden = true;
-    sourceEl.textContent = '';
+    sourceTextEl.textContent = '';
     skeletonEl.hidden = false;
     engineEl.textContent = '';
     btnSource.dataset.on = String(!!settings.showOriginal);
@@ -439,6 +470,7 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
     open = false;
     range = null;
     cancelRequest();
+    stopSpeech();
     if (!pop) return;
     pop.dataset.closing = 'true';
     pop.dataset.open = 'false';
@@ -551,9 +583,83 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
 
   function revealSource(force) {
     const showing = force ?? sourceEl.hidden;
-    sourceEl.textContent = currentSource;
+    sourceTextEl.textContent = currentSource;
     sourceEl.hidden = !showing;
     btnSource.dataset.on = String(showing);
+    if (!showing) stopSpeech();
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Pronunciation                                                     */
+  /* ---------------------------------------------------------------- */
+
+  const synth = window.speechSynthesis;
+  let utterance = null;
+  // `synth.speaking` lags the call by a tick, so a quick second click would
+  // start a second reading instead of stopping the first. Track it ourselves.
+  let speaking = false;
+  let keepAlive = null;
+
+  /** Good enough to pick a voice: the source is whatever the reader can't read. */
+  function guessLang(text) {
+    if (/[぀-ヿ]/.test(text)) return 'ja-JP';
+    if (/[가-힯]/.test(text)) return 'ko-KR';
+    if (/[一-鿿]/.test(text)) return 'zh-CN';
+    if (/[Ѐ-ӿ]/.test(text)) return 'ru-RU';
+    return 'en-US';
+  }
+
+  function setSpeakingUI(on) {
+    if (!btnSpeak) return;
+    btnSpeak.dataset.on = String(on);
+    btnSpeak.innerHTML = icon(on ? 'mute' : 'speak');
+    btnSpeak.title = on ? '停止朗读' : '朗读原文';
+    btnSpeak.setAttribute('aria-label', btnSpeak.title);
+  }
+
+  function stopSpeech() {
+    if (!synth) return;
+    speaking = false;
+    utterance = null;
+    clearInterval(keepAlive);
+    keepAlive = null;
+    synth.cancel();
+    setSpeakingUI(false);
+  }
+
+  function speak() {
+    if (!synth) return;
+    // Second click stops: the button is the same affordance both ways.
+    if (speaking) {
+      stopSpeech();
+      return;
+    }
+    const text = currentSource.trim();
+    if (!text) return;
+
+    utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = guessLang(text);
+    utterance.rate = 0.95; // a touch under default; this is for hearing a word clearly
+    const done = () => stopSpeech();
+    utterance.onend = done;
+    utterance.onerror = done;
+
+    speaking = true;
+    setSpeakingUI(true);
+    synth.speak(utterance);
+
+    // Chrome silently stops synthesis after ~15s. A whole paragraph is a normal
+    // thing to want read aloud, so nudge it along.
+    clearInterval(keepAlive);
+    keepAlive = setInterval(() => {
+      if (!speaking) {
+        clearInterval(keepAlive);
+        keepAlive = null;
+        return;
+      }
+      synth.pause();
+      synth.resume();
+    }, 10000);
   }
 
   function toggleSource() {
@@ -698,6 +804,7 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
 
   function destroy() {
     controller.abort();
+    stopSpeech();
     clearTimeout(closeTimer);
     clearTimeout(evalTimer);
     clearTimeout(copyTimer);
