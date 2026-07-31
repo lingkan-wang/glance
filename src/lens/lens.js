@@ -615,6 +615,47 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
     return 'en-US';
   }
 
+  /**
+   * Chrome's *default* voice on macOS is frequently one of the novelty voices
+   * (Fred, Albert…) — robotic and grating. Never leave the choice to the
+   * browser: rank what's installed and pick the most natural one ourselves.
+   */
+  const NOVELTY = /albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|wobble|fred|good news|jester|organ|superstar|trinoids|whisper|zarvox|grandma|grandpa|rocko|shelley|eddy|flo|reed|sandy|junior|ralph|kathy|hysterical/i;
+  const PREMIUM =
+    /samantha|karen|daniel|moira|tessa|serena|allison|ava|susan|zoe|tingting|婷婷|meijia|美嘉|sinji|善姫|kyoko|yuna|milena|katya/i;
+
+  let voicesReady = synth ? synth.getVoices() : [];
+  synth?.addEventListener?.(
+    'voiceschanged',
+    () => {
+      voicesReady = synth.getVoices();
+    },
+    { signal },
+  );
+
+  function pickVoice(lang) {
+    const list = voicesReady.length ? voicesReady : synth.getVoices();
+    const base = lang.split('-')[0].toLowerCase();
+    let best = null;
+    let bestScore = -1;
+    for (const v of list) {
+      const vLang = (v.lang || '').toLowerCase().replace('_', '-');
+      if (!vLang.startsWith(base)) continue;
+      let score = 0;
+      if (vLang === lang.toLowerCase()) score += 4; // exact locale beats cousin locale
+      if (/google/i.test(v.name)) score += 8; // Chrome's network voices, by far the most natural
+      else if (PREMIUM.test(v.name)) score += 6; // known-good local voices (Samantha, Tingting…)
+      else if (/siri|premium|enhanced|natural/i.test(v.name)) score += 5;
+      if (NOVELTY.test(v.name)) score -= 20; // never the duck
+      if (v.localService) score += 1; // tie-break: local wins over other remote voices
+      if (score > bestScore) {
+        bestScore = score;
+        best = v;
+      }
+    }
+    return best;
+  }
+
   function setSpeakingUI(on) {
     if (!btnSpeak) return;
     btnSpeak.dataset.on = String(on);
@@ -643,8 +684,13 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
     if (!text) return;
 
     utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = guessLang(text);
+    const lang = guessLang(text);
+    utterance.lang = lang;
+    const voice = pickVoice(lang);
+    if (voice) utterance.voice = voice;
     utterance.rate = 0.95; // a touch under default; this is for hearing a word clearly
+    utterance.pitch = 1;
+    utterance.volume = 1;
     const done = () => stopSpeech();
     utterance.onend = done;
     utterance.onerror = done;
