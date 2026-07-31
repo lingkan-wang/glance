@@ -323,7 +323,7 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
         <div class="bar-row">
           <span class="engine"></span>
           <button class="btn-source" type="button" title="显示原文" aria-label="显示原文">${icon('original')}</button>
-          <button class="btn-copy" type="button" title="复制译文" aria-label="复制译文">${icon('copy')}</button>
+          <button class="btn-copy" type="button" title="复制原文" aria-label="复制原文">${icon('copy')}</button>
           <button class="btn-close" type="button" title="关闭" aria-label="关闭">${icon('close')}</button>
         </div>
       </div>`;
@@ -721,12 +721,17 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
   }
 
   async function copy() {
-    if (!currentText) return;
+    // Copy the *cleaned original*, not the translation. The reader is here to
+    // work with the English (paste into notes, a dictionary, a chat with an
+    // AI); the popover's version has the PDF line breaks and hyphens already
+    // repaired, which is exactly what raw ⌘C on the page can't give you.
+    const payload = currentSource || currentText;
+    if (!payload) return;
     try {
-      await navigator.clipboard.writeText(currentText);
+      await navigator.clipboard.writeText(payload);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = currentText;
+      ta.value = payload;
       ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
       document.body.appendChild(ta);
       ta.select();
