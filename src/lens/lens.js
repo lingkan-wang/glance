@@ -38,7 +38,6 @@
       'M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z',
     speak:
       'M155.51,24.81a8,8,0,0,0-8.42.88L77.25,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V32A8,8,0,0,0,155.51,24.81ZM32,96H72v64H32ZM144,207.64,88,164.09V91.91l56-43.55Zm54-106.08a40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.58,24,24,0,0,0,0-31.72,8,8,0,0,1,12-10.58ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z',
-    mute: 'M53.92,34.62A8,8,0,1,0,42.08,45.38L73.55,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H77.25l69.84,54.31A8,8,0,0,0,160,224V175.09l42.08,46.29a8,8,0,1,0,11.84-10.76ZM32,96H72v64H32ZM144,207.64,88,164.09V95.89l56,61.6Zm42-63.77a24,24,0,0,0,0-31.72,8,8,0,1,1,12-10.57,40,40,0,0,1,0,52.88,8,8,0,0,1-12-10.59Zm-80.16-76a8,8,0,0,1,1.4-11.23l39.85-31A8,8,0,0,1,160,32v74.83a8,8,0,0,1-16,0V48.36l-26.94,21A8,8,0,0,1,105.84,67.91ZM248,128a79.9,79.9,0,0,1-20.37,53.34,8,8,0,0,1-11.92-10.67,64,64,0,0,0,0-85.33,8,8,0,1,1,11.92-10.67A79.83,79.83,0,0,1,248,128Z',
   };
 
   const icon = (name) =>
@@ -182,7 +181,12 @@
   margin: -3px -5px 0 0;
 }
 .btn-speak svg { width: 15px; height: 15px; }
+
+/* While speaking, the icon stays a speaker and simply breathes. Swapping in a
+   crossed-out speaker reads as "muted", which is the opposite of what happened. */
 .btn-speak[data-on="true"] { color: var(--accent); }
+.btn-speak[data-on="true"] svg { animation: breathe 1150ms ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: 0.4; } }
 
 .error { margin: 0; font-size: 13px; color: var(--ink-dim); }
 
@@ -257,6 +261,8 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
   .pop { transition-property: opacity; transform: translate3d(var(--x), var(--y), 0); }
   .pop[data-open="true"], .pop[data-closing="true"] { transform: translate3d(var(--x), var(--y), 0); }
   .bar::after { animation: none; }
+  /* Colour alone still says "speaking". */
+  .btn-speak[data-on="true"] svg { animation: none; }
 }
 `;
 
@@ -612,7 +618,6 @@ button.swapping svg { filter: blur(2px); opacity: 0.4; }
   function setSpeakingUI(on) {
     if (!btnSpeak) return;
     btnSpeak.dataset.on = String(on);
-    btnSpeak.innerHTML = icon(on ? 'mute' : 'speak');
     btnSpeak.title = on ? '停止朗读' : '朗读原文';
     btnSpeak.setAttribute('aria-label', btnSpeak.title);
   }
